@@ -6,10 +6,28 @@
   "license": "MPL-2.0",
   "type": "module",
   "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
+    "@eslint/js": "^9.23.0",
     "@types/node": "^20.5.7",
-    "typescript": "^5.2.2"
+    "@typescript-eslint/eslint-plugin": "^8.29.0",
+    "@typescript-eslint/parser": "^8.29.0",
+    "eslint": "^9.23.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.6",
+    "globals": "^16.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.2.2",
+    "typescript-eslint": "^8.29.0"
   },
   "dependencies": {
     "encore.dev": "^1.46.16"
+  },
+  "scripts": {
+    "lint-staged": "lint-staged",
+    "prepare": "husky",
+    "typecheck": "tsc --noEmit --incremental false"
   }
 }

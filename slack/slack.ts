@@ -1,18 +1,18 @@
-import { api } from "encore.dev/api";
-import { secret } from "encore.dev/config";
-import { createHmac, timingSafeEqual } from "node:crypto";
-import type { IncomingMessage } from "node:http";
-import type { IncomingHttpHeaders } from "http";
+import { api } from 'encore.dev/api';
+import { secret } from 'encore.dev/config';
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import type { IncomingMessage } from 'node:http';
+import type { IncomingHttpHeaders } from 'http';
 
 // This uses Encore's built-in secrets manager, learn more: https://encore.dev/docs/ts/primitives/secrets
-const slackSigningSecret = secret("SlackSigningSecret");
+const slackSigningSecret = secret('SlackSigningSecret');
 
 // cowart is the formatting string for printing the cow art.
 const cowart = (msg: string) => `
 \`\`\`
-+-${"-".repeat(msg.length)}-+
++-${'-'.repeat(msg.length)}-+
 | ${msg} |
-+-${"-".repeat(msg.length)}-+
++-${'-'.repeat(msg.length)}-+
       \\  __n__n__
   .------\`-\\00/-'
  /  ##  ## (oo)
@@ -23,7 +23,7 @@ const cowart = (msg: string) => `
 `;
 
 export const cowsay = api.raw(
-  { expose: true, path: "/cowsay", method: "*" },
+  { expose: true, path: '/cowsay', method: '*' },
   async (req, resp) => {
     const body = await getBody(req);
 
@@ -36,26 +36,26 @@ export const cowsay = api.raw(
       return;
     }
 
-    const text = new URLSearchParams(body).get("text");
-    const msg = cowart(text || "Moo!");
-    resp.setHeader("Content-Type", "application/json");
-    resp.end(JSON.stringify({ response_type: "in_channel", text: msg }));
-  },
+    const text = new URLSearchParams(body).get('text');
+    const msg = cowart(text || 'Moo!');
+    resp.setHeader('Content-Type', 'application/json');
+    resp.end(JSON.stringify({ response_type: 'in_channel', text: msg }));
+  }
 );
 
 // Verifies the signature of an incoming request from Slack.
 // https://github.com/slackapi/bolt-js/blob/main/src/receivers/verify-request.ts
 const verifySignature = async function (
   body: string,
-  headers: IncomingHttpHeaders,
+  headers: IncomingHttpHeaders
 ) {
   const requestTimestampSec = parseInt(
-    headers["x-slack-request-timestamp"] as string,
+    headers['x-slack-request-timestamp'] as string
   );
-  const signature = headers["x-slack-signature"] as string;
+  const signature = headers['x-slack-signature'] as string;
   if (Number.isNaN(requestTimestampSec)) {
     throw new Error(
-      `Failed to verify authenticity: header x-slack-request-timestamp did not have the expected type (${requestTimestampSec})`,
+      `Failed to verify authenticity: header x-slack-request-timestamp did not have the expected type (${requestTimestampSec})`
     );
   }
 
@@ -70,26 +70,26 @@ const verifySignature = async function (
   // Rule 1: Check staleness
   if (requestTimestampSec < fiveMinutesAgoSec) {
     throw new Error(
-      `Failed to verify authenticity: x-slack-request-timestamp must differ from system time by no more than ${requestTimestampMaxDeltaMin} minutes or request is stale`,
+      `Failed to verify authenticity: x-slack-request-timestamp must differ from system time by no more than ${requestTimestampMaxDeltaMin} minutes or request is stale`
     );
   }
 
   // Rule 2: Check signature
   // Separate parts of signature
-  const [signatureVersion, signatureHash] = signature.split("=");
+  const [signatureVersion, signatureHash] = signature.split('=');
   // Only handle known versions
-  if (signatureVersion !== "v0") {
+  if (signatureVersion !== 'v0') {
     throw new Error(`Failed to verify authenticity: unknown signature version`);
   }
   // Compute our own signature hash
-  const hmac = createHmac("sha256", slackSigningSecret());
+  const hmac = createHmac('sha256', slackSigningSecret());
   hmac.update(`${signatureVersion}:${requestTimestampSec}:${body}`);
-  const ourSignatureHash = hmac.digest("hex");
+  const ourSignatureHash = hmac.digest('hex');
   if (
     !signatureHash ||
     !timingSafeEqual(
-      Buffer.from(signatureHash, "utf8"),
-      Buffer.from(ourSignatureHash, "utf8"),
+      Buffer.from(signatureHash, 'utf8'),
+      Buffer.from(ourSignatureHash, 'utf8')
     )
   ) {
     throw new Error(`Failed to verify authenticity: signature mismatch`);
@@ -99,12 +99,12 @@ const verifySignature = async function (
 // Extract the body from an incoming request.
 function getBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve) => {
-    const bodyParts: any[] = [];
+    const bodyParts: Buffer[] = [];
     req
-      .on("data", (chunk) => {
+      .on('data', (chunk) => {
         bodyParts.push(chunk);
       })
-      .on("end", () => {
+      .on('end', () => {
         resolve(Buffer.concat(bodyParts).toString());
       });
   });
