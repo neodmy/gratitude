@@ -1,51 +1,15 @@
-import { api } from 'encore.dev/api';
-import { secret } from 'encore.dev/config';
+import { IncomingHttpHeaders } from 'http';
+import { IncomingMessage } from 'http';
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import type { IncomingMessage } from 'node:http';
-import type { IncomingHttpHeaders } from 'http';
+import { secret } from 'encore.dev/config';
 
-// This uses Encore's built-in secrets manager, learn more: https://encore.dev/docs/ts/primitives/secrets
+import { SlackMessageType } from './parsers/types';
+
 const slackSigningSecret = secret('SlackSigningSecret');
-
-// cowart is the formatting string for printing the cow art.
-const cowart = (msg: string) => `
-\`\`\`
-+-${'-'.repeat(msg.length)}-+
-| ${msg} |
-+-${'-'.repeat(msg.length)}-+
-      \\  __n__n__
-  .------\`-\\00/-'
- /  ##  ## (oo)
-/ \\## __   ./
-   |//YY \\|/
-   |||   |||
-\`\`\`
-`;
-
-export const cowsay = api.raw(
-  { expose: true, path: '/cowsay', method: '*' },
-  async (req, resp) => {
-    const body = await getBody(req);
-
-    try {
-      await verifySignature(body, req.headers);
-    } catch (err) {
-      const e = err as Error;
-      resp.statusCode = 500;
-      resp.end(e.message);
-      return;
-    }
-
-    const text = new URLSearchParams(body).get('text');
-    const msg = cowart(text || 'Moo!');
-    resp.setHeader('Content-Type', 'application/json');
-    resp.end(JSON.stringify({ response_type: 'in_channel', text: msg }));
-  }
-);
 
 // Verifies the signature of an incoming request from Slack.
 // https://github.com/slackapi/bolt-js/blob/main/src/receivers/verify-request.ts
-const verifySignature = async function (
+export const verifySignature = async function (
   body: string,
   headers: IncomingHttpHeaders
 ) {
@@ -96,10 +60,9 @@ const verifySignature = async function (
   }
 };
 
-// Extract the body from an incoming request.
-function getBody(req: IncomingMessage): Promise<string> {
+export const getBody = (req: IncomingMessage): Promise<string> => {
   return new Promise((resolve) => {
-    const bodyParts: Buffer[] = [];
+    const bodyParts: any[] = [];
     req
       .on('data', (chunk) => {
         bodyParts.push(chunk);
@@ -108,4 +71,13 @@ function getBody(req: IncomingMessage): Promise<string> {
         resolve(Buffer.concat(bodyParts).toString());
       });
   });
-}
+};
+
+export const getSlackMessageType = (text: string): SlackMessageType | null => {
+  if (text.includes('++')) {
+    return SlackMessageType.Increase;
+  } else if (text.includes('--')) {
+    return SlackMessageType.Decrease;
+  }
+  return null;
+};

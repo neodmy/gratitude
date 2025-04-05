@@ -1,3 +1,3 @@
 import { Service } from 'encore.dev/service';
 
-export default new Service('slack');
+export default new Service('slackProxy');

@@ -30,6 +30,7 @@ export default defineConfig([
     rules: {
       ...tseslint.configs.recommended.rules,
       ...prettierConfig.rules,
+      'no-unused-vars': 'off',
       semi: ['error', 'always'],
       'prettier/prettier': 'error',
     },
