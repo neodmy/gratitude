@@ -1,5 +1,6 @@
 import { api } from 'encore.dev/api';
 import { secret } from 'encore.dev/config';
+import { factory } from '~encore/clients';
 
 const botId = secret('SlackBotId');
 
@@ -44,7 +45,9 @@ export const slackEvent = api.raw(
             appId: data.api_app_id,
           });
 
-          // TODO: process translated messages
+          for (const translatedMessage of translatedMessages) {
+            factory.processMessage({ message: translatedMessage });
+          }
         }
       }
 

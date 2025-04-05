@@ -30,6 +30,7 @@
   "scripts": {
     "lint-staged": "lint-staged",
     "prepare": "husky",
-    "typecheck": "tsc --noEmit --incremental false"
+    "typecheck": "tsc --noEmit --incremental false",
+    "start:local": "encore run"
   }
 }

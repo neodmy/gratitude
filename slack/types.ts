@@ -1,8 +1,3 @@
-export type ApiResponse<T> = {
-  ok: boolean;
-  data: T;
-};
-
 export type SlackUserInfo = {
   ok: boolean;
   user: {
@@ -16,15 +11,10 @@ export type SlackUserInfo = {
     tz_label: string;
     tz_offset: number;
     profile: {
-      avatar_hash: string;
-      status_text: string;
-      status_emoji: string;
-      real_name: string;
-      display_name: string;
-      real_name_normalized: string;
-      display_name_normalized: string;
       email: string;
-      image_original: string;
+      first_name: string;
+      last_name: string;
+      status_text_canonical: string;
       team: string;
     };
     is_admin: boolean;
@@ -33,22 +23,30 @@ export type SlackUserInfo = {
     is_restricted: boolean;
     is_ultra_restricted: boolean;
     is_bot: boolean;
-    updated: number;
     is_app_user: boolean;
-    has_2fa: boolean;
+    updated: number;
+    is_email_confirmed: boolean;
+    who_can_share_contact_card: string;
   };
 };
 
-export type SlackChannelResponse = ApiResponse<{
+export type SlackChannelResponse = {
+  ok: boolean;
   channel: {
     id: string;
     name: string;
   };
-}>;
+};
 
-export type SlackOrganizationResponse = ApiResponse<{
-  organization: {
+export type SlackOrganizationResponse = {
+  ok: boolean;
+  team: {
     id: string;
     name: string;
   };
-}>;
+};
+
+export type SlackGroupMembersResponse = {
+  ok: boolean;
+  users: string[];
+};
